@@ -1,11 +1,11 @@
-import boto3
-import os
 import logging
+import os
 import random
-from dotenv import load_dotenv
 
-from botocore.exceptions import ClientError
+import boto3
 from boto3.dynamodb.conditions import Attr
+from botocore.exceptions import ClientError
+from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
@@ -64,7 +64,7 @@ def get_random_joke():
             logger.warning("☁️ [AWS] No jokes found in the table.")
             return None
 
-        joke = random.choice(items)
+        joke = random.choice(items)  # noqa: S311
         logger.info(f"☁️ [AWS] Returning joke with id: {joke['id']}")
 
         return joke
@@ -97,7 +97,7 @@ def get_random_ten_jokes():
 
         return items[:10]
     except Exception as e:
-        print(f"Dynamo Error: {e}")
+        print(f"Dynamo Error: {e}")  # noqa: T201
         return []
 
 def get_joke_by_id(joke_id: str):

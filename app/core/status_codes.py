@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class APIStatusCode(Enum):
     """
     Enum representing standard API response status codes and labels.

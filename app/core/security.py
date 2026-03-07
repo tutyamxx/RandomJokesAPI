@@ -1,5 +1,7 @@
 import os
+
 from starlette.middleware.base import BaseHTTPMiddleware
+
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     """
@@ -38,7 +40,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Download-Options"] = "noopen"
         response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
 
-        # Disabling legacy XSS protection as it can create more vulnerabilities than it solves in modern browsers.
+        # Disabling legacy XSS protection as it can create more vulnerabilities
+        # than it solves in modern browsers.
         response.headers["X-XSS-Protection"] = "0"
 
         # Core Protections (Always On)
@@ -60,7 +63,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
             # Strict Content Security Policy
             # Note: default-src 'self' is quite restrictive. Ensure assets are local.
-            response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; object-src 'none';"
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "script-src 'self'; "
+                "object-src 'none';"
+            )
         else:
             # CSP for local Swagger UI / Redoc testing
             response.headers["Content-Security-Policy"] = "default-src 'self' 'unsafe-inline';"

@@ -24,11 +24,15 @@ jobs:
         with:
           enable-cache: true
 
-      # - name: 📦 Install Dependencies
-      #   run: |
-      #     uv pip install --system --upgrade pip
-      #     uv pip install --system -r requirements.txt
-      #     uv pip install --system pytest
+      - name: 📦 Install Dependencies
+        run: |
+          uv pip install --system --upgrade pip
+          uv pip install --system -r requirements-dev.txt
+      # uv pip install --system -r requirements.txt
+      # uv pip install --system pytest
+
+      - name: 🔍 Lint with Ruff
+        run: uv run ruff check .
 
       # - name: 🧪 Run Python Tests
       #   run: pytest

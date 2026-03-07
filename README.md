@@ -64,6 +64,18 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
+## Install developer requirements
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+## Run the linting
+
+```bash
+python -m ruff check .
+```
+
 ## Run locally
 
 ```bash

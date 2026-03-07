@@ -1,6 +1,7 @@
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
+
 # Log client IPs for debugging
 def get_remote_address_with_log(request):
     """
@@ -16,7 +17,7 @@ def get_remote_address_with_log(request):
         str: The IP address of the client making the request.
     """
     addr = get_remote_address(request)
-    print(f"🐌 [RateLimiter] Request from {addr}")
+    print(f"🐌 [RateLimiter] Request from {addr}")  # noqa: T201
 
     return addr
 

@@ -1,25 +1,22 @@
-print("🐍 FastAPI app loaded, handler ready")
-
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
-from app.routes.jokes import router as jokes_router
-
-from app.core.security import SecurityHeadersMiddleware
-from app.core.rate_limiter import init_limiter
-from app.core.status_codes import APIStatusCode
-from app.core.config import settings
-
 from slowapi.errors import RateLimitExceeded
 
+from app.core.config import settings
+from app.core.rate_limiter import init_limiter
+from app.core.security import SecurityHeadersMiddleware
+from app.core.status_codes import APIStatusCode
+from app.routes.jokes import router as jokes_router
 from app.utils.response import error_response
+
+print("🐍 FastAPI app loaded, handler ready")  # noqa: T201
 
 app = FastAPI(title="RandomJokesAPI")
 
 # Initialize limiter & middleware
 limiter = init_limiter(app)
-print(f"🐌 [RateLimiter] Using rate limit: {settings.RATE_LIMIT_STANDARD}")
+print(f"🐌 [RateLimiter] Using rate limit: {settings.RATE_LIMIT_STANDARD}")  # noqa: T201
 
 # Exception handler for rate limits
 @app.exception_handler(RateLimitExceeded)

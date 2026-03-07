@@ -1,0 +1,37 @@
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+# Selected for a Public API:
+# E, W: pycodestyle (standard style)
+# F: Pyflakes (logic errors)
+# I: isort (import organization)
+# B: bugbear (common design flaws)
+# UP: pyupgrade (modernize syntax)
+# S: bandit (security / hardcoded secrets)
+# T20: flake8-print (no stray prints in production)
+# ASYNC: flake8-async (correct await usage)
+# SIM: flake8-simplify (suggests cleaner code)
+# C4: flake8-comprehensions (better list/dict usage)
+# N: pep8-naming (standardizes ClassName vs func_name)
+select = ["E", "W", "F", "I", "B", "UP", "S", "T20", "ASYNC", "SIM", "C4", "N"]
+
+ignore = [
+    "D203", # Conflict with D211
+    "S101", # Allow assert (essential for testing)
+    "E501", # Ignore line-length in lint (let the Formatter handle it)
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false # Enforces clean git diffs
+line-ending = "auto"
+
+[tool.pyright]
+typeCheckingMode = "standard"
+venvPath = "."
+venv = ".venv"
+# For APIs, it's safer to treat missing type hints as warnings
+reportMissingTypeStubs = false

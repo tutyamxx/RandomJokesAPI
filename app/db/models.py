@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class Joke(BaseModel):
     """
     Data transfer object representing a single joke entity.
