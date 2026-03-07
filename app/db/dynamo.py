@@ -1,6 +1,7 @@
 import logging
 import os
 import random
+from collections import Counter
 
 import boto3
 from boto3.dynamodb.conditions import Attr
@@ -188,3 +189,35 @@ def get_joke_count():
     except ClientError as e:
         logger.error(f"☁️ [AWS] Error retrieving count from DynamoDB: {e}")
         return 0
+
+# This is too expensive to run so hardcoded values it is
+# def get_joke_counts_by_category():
+#     """
+#     Scans DynamoDB and counts the number of jokes per category.
+#     Uses ProjectionExpression to minimize read costs.
+#     Returns a dict {category: count}.
+#     """
+#     try:
+#         logger.info("☁️ [AWS] Counting jokes per category...")
+
+#         category_counts = Counter()
+#         response = table.scan(ProjectionExpression="category")
+
+#         for item in response['Items']:
+#             category_counts[item['category']] += 1
+
+#         # Handle pagination
+#         while 'LastEvaluatedKey' in response:
+#             response = table.scan(
+#                 ProjectionExpression="category",
+#                 ExclusiveStartKey=response['LastEvaluatedKey']
+#             )
+#             for item in response['Items']:
+#                 category_counts[item['category']] += 1
+
+#         logger.info(f"☁️ [AWS] Counts per category: {dict(category_counts)}")
+#         return dict(category_counts)
+
+#     except ClientError as e:
+#         logger.error(f"☁️ [AWS] Error counting categories: {e}")
+#         return {}

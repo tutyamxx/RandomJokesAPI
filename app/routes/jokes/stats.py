@@ -14,3 +14,23 @@ async def joke_count(request: Request):
     count = await run_in_threadpool(get_joke_count)
 
     return success_response({"total_jokes": count})
+
+
+# This is too expensive to run so hardcoded values it is XD
+hardcoded_data = {
+    "dad": 147299,
+    "short": 231657,
+    "yomama": 847,
+    "programming": 195,
+    "chuck-norris": 527,
+    "web-scrape": 5,
+    "general": 41,
+    "misc": 18,
+    "pun": 33,
+    "insult": 35
+}
+
+@router.get("/countbycategory")
+@limiter.limit(settings.RATE_LIMIT_STANDARD)
+async def count_by_category(request: Request):
+    return success_response({"total_jokes_by_category": hardcoded_data})

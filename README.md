@@ -34,6 +34,7 @@ A high-performance, serverless-ready **FastAPI** application that serves up joke
 | `GET` | [/jokes/random/ten](https://random-jokes-api-roan.vercel.app/jokes/random/ten) | Get a batch of 10 random jokes | `2/sec` |
 | `GET` | [/jokes/{joke_id}](https://random-jokes-api-roan.vercel.app/jokes/4438682b-1e87-432e-a49b-a5318814bf1f) | Get a specific joke by UUID | `2/sec` |
 | `GET` | [/jokes/category/{name}](https://random-jokes-api-roan.vercel.app/jokes/category/programming) | Get jokes from a specific category | `1/min` |
+| `GET` | [/jokes/countbycategory](https://random-jokes-api-roan.vercel.app/jokes/countbycategory) | Get the total number of jokes **per category** | `2/sec` |
 
 
 # 📦 How to run it locally
