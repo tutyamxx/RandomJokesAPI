@@ -1,11 +1,7 @@
 {
   "version": 2,
+  "regions": ["lhr1"],
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/index.py" }
-  ],
-  "functions": {
-    "api/index.py": {
-      "regions": ["lhr1"]
-    }
-  }
+  ]
 }
