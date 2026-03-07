@@ -53,23 +53,41 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         if "X-Powered-By" in response.headers:
             del response.headers["X-Powered-By"]
 
+        # Extra protection to hide server info
+        response.headers["Server"] = ""
+
         # Permissions Policy (Restrict hardware access)
-        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=(), accelerometer=(), gyroscope=(), magnetometer=(), payment=()"
 
         # Production-Only Hardening
         if is_production:
             # Force HTTPS for 1 year
-            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
 
             # Strict Content Security Policy
             # Note: default-src 'self' is quite restrictive. Ensure assets are local.
-            response.headers["Content-Security-Policy"] = (
+            response.headers[
+                "Content-Security-Policy"
+            ] = (
                 "default-src 'self'; "
-                "script-src 'self'; "
-                "object-src 'none';"
+                "script-src 'self' 'strict-dynamic'; "
+                "style-src 'self'; "
+                "img-src 'self' data:; "
+                "font-src 'self'; "
+                "object-src 'none'; "
+                "base-uri 'self'; "
+                "form-action 'self'; "
+                "frame-ancestors 'none'; "
+                "upgrade-insecure-requests;"
             )
+
+            # Expect-CT (Certificate Transparency)
+            response.headers["Expect-CT"] = "max-age=86400, enforce"
+
+            # Referrer-Policy enforced
+            response.headers["Referrer-Policy"] = "no-referrer"
         else:
             # CSP for local Swagger UI / Redoc testing
-            response.headers["Content-Security-Policy"] = "default-src 'self' 'unsafe-inline';"
+            response.headers["Content-Security-Policy"] = "default-src 'self' 'unsafe-inline' 'unsafe-eval';"
 
         return response
