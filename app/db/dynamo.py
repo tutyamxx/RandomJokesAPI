@@ -164,3 +164,27 @@ def get_jokes_by_category(category: str):
     except ClientError as e:
         logger.error(f"☁️ [AWS] Error querying jokes by category: {e}")
         return []
+
+
+def get_joke_count():
+    """
+    Retrieves the total number of items in the DynamoDB table.
+
+    Note:
+        DynamoDB updates this count approximately every 6 hours.
+
+    Returns:
+        int: The number of items in the table. Returns 0 if an AWS service error occurs or the table is empty.
+    """
+    try:
+        logger.info("☁️ [AWS] Fetching item count from DynamoDB...")
+
+        # This is a metadata look-up; it does not consume Read Capacity Units (RCUs)
+        count = table.item_count
+
+        logger.info(f"☁️ [AWS] Current table item count: {count}")
+        return count
+
+    except ClientError as e:
+        logger.error(f"☁️ [AWS] Error retrieving count from DynamoDB: {e}")
+        return 0

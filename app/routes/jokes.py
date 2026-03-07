@@ -5,6 +5,7 @@ from app.core.rate_limiter import limiter
 from app.core.status_codes import APIStatusCode
 from app.db.dynamo import (
     get_joke_by_id,
+    get_joke_count,
     get_jokes_by_category,
     get_random_joke,
     get_random_ten_jokes,
@@ -35,6 +36,13 @@ async def random_ten_jokes(request: Request):
         )
 
     return success_response(jokes)
+
+@router.get("/count")
+@limiter.limit(settings.RATE_LIMIT_STANDARD)
+async def joke_count(request: Request):
+    count = get_joke_count()
+
+    return success_response({"total_jokes": count})
 
 @router.get("/{joke_id}")
 @limiter.limit(settings.RATE_LIMIT_STANDARD)

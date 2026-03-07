@@ -33,6 +33,7 @@ A high-performance, serverless-ready **FastAPI** application that serves up joke
 
 | Method | Endpoint | Description | Rate Limit |
 | :--- | :--- | :--- | :--- |
+| `GET` | [/jokes/count](https://random-jokes-api-roan.vercel.app/jokes/count) | Get the total number of jokes in the database. DynamoDB updates this count approximately every `6 hours`. | `2/sec` |
 | `GET` | [/jokes/random](https://random-jokes-api-roan.vercel.app/jokes/random) | Get one random joke | `2/sec` |
 | `GET` | [/jokes/random/ten](https://random-jokes-api-roan.vercel.app/jokes/random/ten) | Get a batch of 10 random jokes | `2/sec` |
 | `GET` | [/jokes/{joke_id}](https://random-jokes-api-roan.vercel.app/jokes/4438682b-1e87-432e-a49b-a5318814bf1f) | Get a specific joke by UUID | `2/sec` |
@@ -46,28 +47,25 @@ A high-performance, serverless-ready **FastAPI** application that serves up joke
 ### Linux / macOS
 
 ```bash
-python -m venv venv
-source venv/Scripts/activate
+python -m venv venv && source venv/Scripts/activate
 ```
 
 ### Windows
 
 ```bash
-python -m venv venv
-venv\Scripts\activate
+python -m venv venv && venv\Scripts\activate
 ```
 
 ## Install requirements
 
 ```bash
-pip install --upgrade pip
-pip install -r requirements.txt
+pip install --upgrade pip && pip install -r requirements.txt
 ```
 
 ## Install developer requirements
 
 ```bash
-pip install -r requirements-dev.txt
+pip install --upgrade pip && pip install -r requirements-dev.txt
 ```
 
 ## Run the linting
