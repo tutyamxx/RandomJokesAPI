@@ -46,7 +46,7 @@ async def root():
         content={
             "status": APIStatusCode.SUCCESS.code,
             "data": {
-                "message": "Jokes API is running.",
+                "message": "🤡 RandomJokesAPI is running.",
                 "endpoints": {
                     "random_joke": "/jokes/random",
                     "random_10_jokes": "/jokes/random/ten",
