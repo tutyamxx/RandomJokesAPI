@@ -13,6 +13,8 @@ from slowapi.errors import RateLimitExceeded
 
 from app.utils.response import error_response
 
+from mangum import Mangum  # << ADD THIS
+
 app = FastAPI(title="RandomJokesAPI")
 
 # Initialize limiter & middleware
@@ -57,3 +59,6 @@ async def root():
 
 # Include jokes router
 app.include_router(jokes_router)
+
+# Serverless handler for Vercel
+handler = Mangum(app)
