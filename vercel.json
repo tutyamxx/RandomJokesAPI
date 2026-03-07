@@ -5,7 +5,6 @@
   ],
   "functions": {
     "api/index.py": {
-      "runtime": "python3.14",
       "regions": ["lhr1"]
     }
   }
