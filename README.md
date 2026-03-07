@@ -26,13 +26,15 @@ A high-performance, serverless-ready **FastAPI** application that serves up joke
 
 ## 🛣 API Endpoints
 
+**Base URL:** `https://random-jokes-api-roan.vercel.app`
+
 | Method | Endpoint | Description | Rate Limit |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/jokes/random` | Get one random joke | `2/sec` |
-| `GET` | `/jokes/random/ten` | Get a batch of 10 random jokes | `2/sec` |
-| `GET` | `/jokes/{joke_id}` | Get a specific joke by UUID | `2/sec` |
-| `GET` | `/jokes/category` | List all unique joke categories | `1/min` |
-| `GET` | `/jokes/category/{name}` | Get jokes from a specific category | `1/min` |
+| `GET` | [/jokes/random](https://random-jokes-api-roan.vercel.app/jokes/random) | Get one random joke | `2/sec` |
+| `GET` | [/jokes/random/ten](https://random-jokes-api-roan.vercel.app/jokes/random/ten) | Get a batch of 10 random jokes | `2/sec` |
+| `GET` | [/jokes/{joke_id}](https://random-jokes-api-roan.vercel.app/jokes/123) | Get a specific joke by UUID | `2/sec` |
+| `GET` | [/jokes/category](https://random-jokes-api-roan.vercel.app/jokes/category) | List all unique joke categories | `1/min` |
+| `GET` | [/jokes/category/{name}](https://random-jokes-api-roan.vercel.app/jokes/category/programming) | Get jokes from a specific category | `1/min` |
 
 
 # 📦 How to run it locally
