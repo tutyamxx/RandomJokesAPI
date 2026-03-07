@@ -27,9 +27,6 @@ async def jokes_category(category: str, request: Request):
     items = await run_in_threadpool(get_jokes_by_category, category)
 
     if not items:
-        return error_response(
-            APIStatusCode.NOT_FOUND.code,
-            f"No jokes found in category: {category}"
-        )
+        return error_response(APIStatusCode.NOT_FOUND.code, f"No jokes found in category: {category}")
 
     return success_response(items)
