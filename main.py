@@ -15,24 +15,20 @@ from slowapi.errors import RateLimitExceeded
 
 from app.utils.response import error_response
 
-from mangum import Mangum
+api = FastAPI(title="RandomJokesAPI")
 
-app = FastAPI(title="RandomJokesAPI")
-
-# Initialize limiter & middleware
-limiter = init_limiter(app)
+limiter = init_limiter(api)
 print(f"🐌 [RateLimiter] Using rate limit: {settings.RATE_LIMIT_STANDARD}")
 
-# Exception handler for rate limits
-@app.exception_handler(RateLimitExceeded)
+@api.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     return error_response(APIStatusCode.RATE_LIMIT.code, "Too many requests. Slow down!")
 
 # Security headers
-app.add_middleware(SecurityHeadersMiddleware)
+api.add_middleware(SecurityHeadersMiddleware)
 
 # CORS configuration
-app.add_middleware(
+api.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=False,
@@ -41,7 +37,7 @@ app.add_middleware(
 )
 
 # Root route
-@app.get("/")
+@api.get("/")
 async def root():
     return JSONResponse(
         status_code=APIStatusCode.SUCCESS.code,
@@ -60,7 +56,8 @@ async def root():
     )
 
 # Include jokes router
-app.include_router(jokes_router)
+api.include_router(jokes_router)
 
-# Serverless handler for Vercel
-handler = Mangum(app)
+# Vercel looks for a variable named 'app'.
+# By setting 'app = api', we give it the FastAPI class instance it needs.
+app = api
