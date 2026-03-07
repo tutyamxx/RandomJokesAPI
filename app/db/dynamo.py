@@ -35,6 +35,24 @@ logger.info(f"☁️ [AWS] Connected to DynamoDB table: 💾 {TABLE_NAME} in reg
 
 # DynamoDB helper functions
 def get_random_joke():
+    """
+    Retrieves a single random joke from the DynamoDB table.
+
+    Performs a full table scan with eventually consistent reads to optimize
+    throughput, then selects one item at random from the result set.
+
+    Returns:
+        dict | None: A dictionary containing 'id', 'category', and 'joke'
+            if successful. Returns None if the table is empty or an
+            AWS service error occurs.
+
+    Example:
+        {
+            "id": "012edec0-8638-4513-af41-aa34f5062d1b",
+            "category": "programming",
+            "joke": "Why do programmers prefer dark mode? Because light attracts bugs."
+        }
+    """
     try:
         logger.info("☁️ [AWS] Scanning DynamoDB table for a random joke...")
 
@@ -56,6 +74,16 @@ def get_random_joke():
         return None
 
 def get_random_ten_jokes():
+    """
+    Scans a pool of jokes and returns 10 randomly selected items.
+
+    Fetches a limited set of items from the table (up to 50) to create a shuffle pool,
+    then returns a subset to simulate randomness without scanning the entire table.
+
+    Returns:
+        list[dict]: A list containing up to 10 joke items.
+            Returns an empty list if no items are found or an error occurs.
+    """
     try:
         # We scan more than 10 to ensure we have a pool to shuffle from
         response = table.scan(Limit=50)
@@ -73,6 +101,16 @@ def get_random_ten_jokes():
         return []
 
 def get_joke_by_id(joke_id: str):
+    """
+    Retrieves a specific joke from DynamoDB using its unique partition key.
+
+    Args:
+        joke_id (str): The UUID or unique identifier of the joke.
+
+    Returns:
+        dict | None: The joke object if found, otherwise None.
+            Uses eventually consistent reads to minimize RCU consumption.
+    """
     try:
         logger.info(f"☁️ [AWS] Fetching joke by ID: {joke_id}")
 
@@ -94,6 +132,21 @@ def get_joke_by_id(joke_id: str):
 
 
 def get_jokes_by_category(category: str):
+    """
+    Filters the joke table for all items matching a specific category.
+
+    Note:
+        This implementation uses a Scan with a FilterExpression. While functional,
+        this is O(n) complexity. For large datasets, consider a Global Secondary
+        Index (GSI) on the 'category' attribute for O(1) Query performance.
+
+    Args:
+        category (str): The category name to filter by (e.g., 'programming').
+
+    Returns:
+        list[dict]: A list of jokes matching the category.
+            Returns an empty list if no matches are found or on error.
+    """
     try:
         logger.info(f"☁️ [AWS] Querying jokes in category: {category}")
 

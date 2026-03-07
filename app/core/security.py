@@ -2,6 +2,27 @@ import os
 from starlette.middleware.base import BaseHTTPMiddleware
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """
+    Middleware to add security-focused HTTP headers to all responses.
+
+    This middleware sets modern and legacy headers to improve security,
+    prevent common attacks, and enforce best practices for browser behavior.
+    It also applies stricter policies when the environment is production.
+
+    Headers set include:
+        - Cross-Origin-Opener-Policy, Cross-Origin-Resource-Policy, Origin-Agent-Cluster
+        - X-DNS-Prefetch-Control, X-Download-Options, X-Permitted-Cross-Domain-Policies
+        - X-XSS-Protection, X-Content-Type-Options, X-Frame-Options, Referrer-Policy
+        - Permissions-Policy
+        - Strict-Transport-Security (production only)
+        - Content-Security-Policy (production or development)
+        - Removes X-Powered-By header if present
+
+    Usage:
+        Add this middleware to a FastAPI app:
+
+        app.add_middleware(SecurityHeadersMiddleware)
+    """
     async def dispatch(self, request, call_next):
         response = await call_next(request)
 
