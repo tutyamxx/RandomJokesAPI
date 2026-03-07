@@ -2,18 +2,15 @@ from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
 from app.core.rate_limiter import init_limiter
-from app.core.security import SecurityHeadersMiddleware
 from app.core.status_codes import APIStatusCode
-
-# Updated import to point to the new jokes package
 from app.routes.jokes import jokes_router
+from app.utils.middleware import init_middleware
 from app.utils.response import error_response
 
 print("🐍 FastAPI app loaded, handler ready")  # noqa: T201
@@ -23,6 +20,9 @@ BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI(title="RandomJokesAPI")
+
+# Setup middleware
+init_middleware(app)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -42,19 +42,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     error_data = error_response(APIStatusCode.INVALID_PARAMETER.code, "Invalid input format. Please ensure your UUID is correct.")
 
     return error_data
-
-
-# Security headers middleware
-app.add_middleware(SecurityHeadersMiddleware)
-
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
-    allow_methods=["GET"],
-    allow_headers=["*"],
-)
 
 # Favicon route
 @app.get("/favicon.ico", include_in_schema=False)
