@@ -20,6 +20,6 @@ class Settings:
     RATE_LIMIT_STANDARD = os.environ.get("RATE_LIMIT_STANDARD", "2/second")
 
     # Slightly stricter for /category/{name} as it may involve more DynamoDB scanning
-    RATE_LIMIT_SEARCH = os.environ.get("RATE_LIMIT_SEARCH", "30/minute")
+    RATE_LIMIT_SEARCH = os.environ.get("RATE_LIMIT_SEARCH", "1/minute")
 
 settings = Settings()
