@@ -1,3 +1,5 @@
+print("🐍 FastAPI app loaded, handler ready")
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -13,7 +15,7 @@ from slowapi.errors import RateLimitExceeded
 
 from app.utils.response import error_response
 
-from mangum import Mangum  # << ADD THIS
+from mangum import Mangum
 
 app = FastAPI(title="RandomJokesAPI")
 
