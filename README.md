@@ -17,16 +17,12 @@ A high-performance, serverless-ready **FastAPI** application that serves up joke
     * **Hardware Lockdown**: Permissions Policy that explicitly disables access to camera, microphone, and geolocation.
     * **Production Guard**: Automatic **HSTS** enforcement (`1-year max-age`) and server signature stripping.
 
----
-
 ## 🛠 Tech Stack
 
 * **Backend**: Python 3.10+, FastAPI
 * **Database**: Amazon DynamoDB
 * **Rate Limiter**: Slowapi
 * **SDK**: Boto3 (`AWS SDK for Python`)
-
----
 
 ## 🛣 API Endpoints
 
@@ -38,7 +34,6 @@ A high-performance, serverless-ready **FastAPI** application that serves up joke
 | `GET` | `/jokes/category` | List all unique joke categories | `1/min` |
 | `GET` | `/jokes/category/{name}` | Get jokes from a specific category | `1/min` |
 
----
 
 # 📦 How to run it locally
 
