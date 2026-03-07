@@ -1,6 +1,6 @@
 [project]
 name = "RandomJokesAPI"
-version = "1.0.1"
+version = "1.0.2"
 description = "A high-performance, serverless-ready FastAPI application that serves up jokes from AWS DynamoDB, synced automatically from S3."
 readme = "README.md"
 requires-python = ">=3.14"

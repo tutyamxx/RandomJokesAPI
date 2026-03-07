@@ -68,6 +68,7 @@ async def root():
                 "endpoints": {
                     "random_joke": "/jokes/random",
                     "random_10_jokes": "/jokes/random/ten",
+                    "total_jokes": "/jokes/count",
                     "joke_by_id": "/jokes/{joke_id}",
                     "jokes_by_category": "/jokes/category/{category}"
                 }
