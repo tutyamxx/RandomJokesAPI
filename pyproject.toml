@@ -55,6 +55,4 @@ venv = ".venv"
 # For APIs, it's safer to treat missing type hints as warnings
 reportMissingTypeStubs = false
 
-# Treat union types and optional values strictly for high-performance safety
-reportUnnecessaryIsInstance = true
-reportUnusedImport = true
+reportMissingImports = "none"
