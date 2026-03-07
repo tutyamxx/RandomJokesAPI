@@ -55,6 +55,22 @@ def get_random_joke():
         logger.error(f"☁️ [AWS] Error connecting to DynamoDB: {e}")
         return None
 
+def get_random_ten_jokes():
+    try:
+        # We scan more than 10 to ensure we have a pool to shuffle from
+        response = table.scan(Limit=50)
+        items = response.get('Items', [])
+
+        if not items:
+            return []
+
+        # Shuffle the results and grab 10
+        random.shuffle(items)
+
+        return items[:10]
+    except Exception as e:
+        print(f"Dynamo Error: {e}")
+        return []
 
 def get_joke_by_id(joke_id: str):
     try:

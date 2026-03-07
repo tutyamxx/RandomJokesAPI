@@ -47,6 +47,7 @@ async def root():
                 "message": "Jokes API is running.",
                 "endpoints": {
                     "random_joke": "/jokes/random",
+                    "random_10_jokes": "/jokes/random/ten",
                     "joke_by_id": "/jokes/{joke_id}",
                     "jokes_by_category": "/jokes/category/{category}"
                 }

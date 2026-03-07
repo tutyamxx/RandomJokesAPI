@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request
 
-from app.db.dynamo import get_random_joke, get_joke_by_id, get_jokes_by_category
+from app.db.dynamo import get_random_joke, get_joke_by_id, get_jokes_by_category, get_random_ten_jokes
 
 from app.core.status_codes import APIStatusCode
 from app.core.config import settings
@@ -20,6 +20,18 @@ async def random_joke(request: Request):
 
     return success_response(joke)
 
+@router.get("/random/ten")
+@limiter.limit(settings.RATE_LIMIT_STANDARD)
+async def random_ten_jokes(request: Request):
+    jokes = get_random_ten_jokes()
+
+    if not jokes:
+        return error_response(
+            APIStatusCode.NOT_FOUND.code,
+            "Could not retrieve random jokes"
+        )
+
+    return success_response(jokes)
 
 @router.get("/{joke_id}")
 @limiter.limit(settings.RATE_LIMIT_STANDARD)
