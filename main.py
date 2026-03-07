@@ -1,6 +1,9 @@
+from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 from slowapi.errors import RateLimitExceeded
 
 from app.core.config import settings
@@ -12,22 +15,33 @@ from app.utils.response import error_response
 
 print("🐍 FastAPI app loaded, handler ready")  # noqa: T201
 
+# Base directory (safe for serverless)
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+
 app = FastAPI(title="RandomJokesAPI")
 
-# Initialize limiter & middleware
+# Mount static files
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+# Initialize limiter
 limiter = init_limiter(app)
 print(f"🐌 [RateLimiter] Using rate limit: {settings.RATE_LIMIT_STANDARD}")  # noqa: T201
 
-# Exception handler for rate limits
+
+# Rate limit exception handler
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
-    return error_response(APIStatusCode.RATE_LIMIT.code, "Too many requests. Slow down!")
+    return error_response(
+        APIStatusCode.RATE_LIMIT.code,
+        "Too many requests. Slow down!"
+    )
 
 
-# Security headers
+# Security headers middleware
 app.add_middleware(SecurityHeadersMiddleware)
 
-# CORS
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -35,6 +49,12 @@ app.add_middleware(
     allow_methods=["GET"],
     allow_headers=["*"],
 )
+
+# Favicon route
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse(STATIC_DIR / "favicon.ico")
+
 
 # Root route
 @app.get("/")
@@ -56,5 +76,5 @@ async def root():
     )
 
 
-# Include jokes router
+# Include routers
 app.include_router(jokes_router)
