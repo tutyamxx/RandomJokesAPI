@@ -1,8 +1,8 @@
 import logging
 import os
 import random
-from collections import Counter
 
+# from collections import Counter
 import boto3
 from boto3.dynamodb.conditions import Attr
 from botocore.exceptions import ClientError
