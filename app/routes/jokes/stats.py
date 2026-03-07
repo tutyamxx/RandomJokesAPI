@@ -11,4 +11,5 @@ router = APIRouter()
 @limiter.limit(settings.RATE_LIMIT_STANDARD)
 async def joke_count(request: Request):
     count = get_joke_count()
+
     return success_response({"total_jokes": count})
