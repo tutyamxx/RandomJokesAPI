@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Request
+from fastapi.concurrency import run_in_threadpool
 
 from app.core.config import settings
 from app.core.rate_limiter import limiter
@@ -10,6 +11,6 @@ router = APIRouter()
 @router.get("/count")
 @limiter.limit(settings.RATE_LIMIT_STANDARD)
 async def joke_count(request: Request):
-    count = get_joke_count()
+    count = await run_in_threadpool(get_joke_count)
 
     return success_response({"total_jokes": count})
