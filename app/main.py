@@ -17,7 +17,7 @@ app = FastAPI(title="RandomJokesAPI")
 
 # Initialize limiter & middleware
 limiter = init_limiter(app)
-print(f"🐌 [RateLimiter] Using rate limit: {settings.RATE_LIMIT}")
+print(f"🐌 [RateLimiter] Using rate limit: {settings.RATE_LIMIT_STANDARD}")
 
 # Exception handler for rate limits
 @app.exception_handler(RateLimitExceeded)
