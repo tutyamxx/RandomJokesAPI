@@ -38,7 +38,8 @@ def get_random_joke():
     try:
         logger.info("☁️ [AWS] Scanning DynamoDB table for a random joke...")
 
-        resp = table.scan()
+        # ConsistentRead=False doubles the throughput for the same cost
+        resp = table.scan(ConsistentRead=False)
         items = resp.get("Items", [])
 
         if not items:
@@ -47,6 +48,7 @@ def get_random_joke():
 
         joke = random.choice(items)
         logger.info(f"☁️ [AWS] Returning joke with id: {joke['id']}")
+
         return joke
 
     except ClientError as e:
@@ -57,7 +59,11 @@ def get_random_joke():
 def get_joke_by_id(joke_id: str):
     try:
         logger.info(f"☁️ [AWS] Fetching joke by ID: {joke_id}")
-        resp = table.get_item(Key={"id": joke_id})
+
+        resp = table.get_item(
+            Key={"id": joke_id},
+            ConsistentRead=False # Eventually consistent read (cheaper)
+        )
         item = resp.get("Item")
 
         if not item:
@@ -74,8 +80,11 @@ def get_joke_by_id(joke_id: str):
 def get_jokes_by_category(category: str):
     try:
         logger.info(f"☁️ [AWS] Querying jokes in category: {category}")
+
+        # Scans are expensive; ConsistentRead=False makes them 50% cheaper
         resp = table.scan(
-            FilterExpression=Attr("category").eq(category)
+            FilterExpression=Attr("category").eq(category),
+            ConsistentRead=False
         )
         items = resp.get("Items", [])
 

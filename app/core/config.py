@@ -5,7 +5,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Settings:
-    # DynamoDB table and AWS region
+    # Environment (development or production)
+    ENV = os.environ.get("ENV", "development")
+
+    # DynamoDB configuration
     DYNAMO_TABLE = os.environ.get("DYNAMO_TABLE", "jokes_table")
     AWS_REGION = os.environ.get("AWS_REGION", "eu-west-2")
 
@@ -13,7 +16,10 @@ class Settings:
     AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 
-    # API rate limit (can be like "10/second" or "100/minute")
-    RATE_LIMIT = os.environ.get("RATE_LIMIT", "2/second")
+    # Standard limit for /random and /{id}
+    RATE_LIMIT_STANDARD = os.environ.get("RATE_LIMIT_STANDARD", "2/second")
+
+    # Slightly stricter for /category/{name} as it may involve more DynamoDB scanning
+    RATE_LIMIT_SEARCH = os.environ.get("RATE_LIMIT_SEARCH", "30/minute")
 
 settings = Settings()

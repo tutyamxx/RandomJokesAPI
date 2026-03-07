@@ -10,9 +10,8 @@ from app.utils.response import success_response, error_response
 
 router = APIRouter(prefix="/jokes")
 
-# Routes
 @router.get("/random")
-@limiter.limit(settings.RATE_LIMIT)
+@limiter.limit(settings.RATE_LIMIT_STANDARD)
 async def random_joke(request: Request):
     joke = get_random_joke()
 
@@ -23,7 +22,7 @@ async def random_joke(request: Request):
 
 
 @router.get("/{joke_id}")
-@limiter.limit(settings.RATE_LIMIT)
+@limiter.limit(settings.RATE_LIMIT_STANDARD)
 async def joke_by_id(joke_id: str, request: Request):
     joke = get_joke_by_id(joke_id)
 
@@ -34,11 +33,14 @@ async def joke_by_id(joke_id: str, request: Request):
 
 
 @router.get("/category/{category}")
-@limiter.limit(settings.RATE_LIMIT)
+@limiter.limit(settings.RATE_LIMIT_SEARCH)
 async def jokes_category(category: str, request: Request):
     items = get_jokes_by_category(category)
 
     if not items:
-        return error_response(APIStatusCode.NOT_FOUND.code, "No jokes found in this category")
+        return error_response(
+            APIStatusCode.NOT_FOUND.code,
+            f"No jokes found in category: {category}"
+        )
 
     return success_response(items)
