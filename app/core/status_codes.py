@@ -20,11 +20,13 @@ class APIStatusCode(Enum):
         ERROR: Generic server error response (HTTP 500)
         NOT_FOUND: Resource not found (HTTP 404)
         RATE_LIMIT: Too many requests / rate limited (HTTP 429)
+        INVALID_PARAMETER: Client sent invalid data/UUID (HTTP 400)
     """
     SUCCESS = (200, "success")
     ERROR = (500, "error")
     NOT_FOUND = (404, "not_found")
     RATE_LIMIT = (429, "rate_limit")
+    INVALID_PARAMETER = (400, "invalid_parameter")
 
     def __init__(self, code: int, label: str):
         self.code = code

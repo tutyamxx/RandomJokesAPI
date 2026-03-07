@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter, Request
 
 from app.core.config import settings
@@ -46,8 +48,8 @@ async def joke_count(request: Request):
 
 @router.get("/{joke_id}")
 @limiter.limit(settings.RATE_LIMIT_STANDARD)
-async def joke_by_id(joke_id: str, request: Request):
-    joke = get_joke_by_id(joke_id)
+async def joke_by_id(joke_id: UUID, request: Request):
+    joke = get_joke_by_id(str(joke_id))
 
     if not joke:
         return error_response(APIStatusCode.NOT_FOUND.code, "Joke not found")

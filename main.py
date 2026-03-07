@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -36,6 +37,16 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
         APIStatusCode.RATE_LIMIT.code,
         "Too many requests. Slow down!"
     )
+
+# Validation error handler (Handles invalid UUIDs and malformed inputs)
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    error_data = error_response(
+        APIStatusCode.INVALID_PARAMETER.code,
+        "Invalid input format. Please ensure your UUID is correct."
+    )
+
+    return error_data
 
 
 # Security headers middleware
