@@ -14,11 +14,7 @@ A high-performance, serverless-ready **FastAPI** application that serves up joke
 * **FastAPI Core**: Blazing fast asynchronous endpoints.
 * **DynamoDB Backend**: NoSQL storage designed for ultra-low latency.
 * **Smart Rate Limiting**: Built-in protection using `slowapi` to prevent API abuse.
-* **Hardened Security Middleware**: Custom-built `SecurityHeadersMiddleware` implementing high-level browser protections:
-    * **Resource Isolation**: Enforces `COOP` and `CORP` to prevent cross-origin data leaks and side-channel attacks.
-    * **Zero-Trust CSP**: Strict Content Security Policy that locks down script/object sources to `'self'`.
-    * **Hardware Lockdown**: Permissions Policy that explicitly disables access to camera, microphone, and geolocation.
-    * **Production Guard**: Automatic **HSTS** enforcement (`1-year max-age`) and server signature stripping.
+* **Hardened Security Middleware**: Custom-built `SecurityHeadersMiddleware` implementing high-level browser protections.
 
 ## 🛠 Tech Stack
 

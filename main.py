@@ -11,7 +11,9 @@ from app.core.config import settings
 from app.core.rate_limiter import init_limiter
 from app.core.security import SecurityHeadersMiddleware
 from app.core.status_codes import APIStatusCode
-from app.routes.jokes import router as jokes_router
+
+# Updated import to point to the new jokes package
+from app.routes.jokes import jokes_router
 from app.utils.response import error_response
 
 print("🐍 FastAPI app loaded, handler ready")  # noqa: T201
