@@ -63,7 +63,8 @@ async def root():
                     "random_10_jokes": "/jokes/random/ten",
                     "total_jokes": "/jokes/count",
                     "joke_by_id": "/jokes/{joke_id}",
-                    "jokes_by_category": "/jokes/category/{category}"
+                    "jokes_by_category": "/jokes/category/{category}",
+                    "total_jokes_by_category": "/jokes/countbycategory"
                 }
             }
         }
