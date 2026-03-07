@@ -4,7 +4,10 @@ A high-performance, serverless-ready **FastAPI** application that serves up joke
 
 [![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
 [![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://aws.amazon.com/)
+[![Amazon DynamoDB](https://img.shields.io/badge/Amazon%20DynamoDB-4053D6?style=for-the-badge&logo=amazondynamodb&logoColor=white)](https://aws.amazon.com/dynamodb/)
+[![Amazon S3](https://img.shields.io/badge/Amazon%20S3-FF9900?style=for-the-badge&logo=amazons3&logoColor=white)](https://aws.amazon.com/s3/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![Uvicorn](https://img.shields.io/badge/uvicorn-%23209285.svg?style=for-the-badge&logo=uvicorn&logoColor=white)](https://www.uvicorn.org/)
 
 ## 🚀 Features
 
@@ -33,7 +36,6 @@ A high-performance, serverless-ready **FastAPI** application that serves up joke
 | `GET` | [/jokes/random](https://random-jokes-api-roan.vercel.app/jokes/random) | Get one random joke | `2/sec` |
 | `GET` | [/jokes/random/ten](https://random-jokes-api-roan.vercel.app/jokes/random/ten) | Get a batch of 10 random jokes | `2/sec` |
 | `GET` | [/jokes/{joke_id}](https://random-jokes-api-roan.vercel.app/jokes/4438682b-1e87-432e-a49b-a5318814bf1f) | Get a specific joke by UUID | `2/sec` |
-| `GET` | [/jokes/category/{category}](https://random-jokes-api-roan.vercel.app/jokes/category/programming) | List all unique joke categories | `1/min` |
 | `GET` | [/jokes/category/{name}](https://random-jokes-api-roan.vercel.app/jokes/category/programming) | Get jokes from a specific category | `1/min` |
 
 
