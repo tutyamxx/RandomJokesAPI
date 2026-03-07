@@ -31,22 +31,15 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 limiter = init_limiter(app)
 print(f"🐌 [RateLimiter] Using rate limit: {settings.RATE_LIMIT_STANDARD}")  # noqa: T201
 
-
 # Rate limit exception handler
 @app.exception_handler(RateLimitExceeded)
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
-    return error_response(
-        APIStatusCode.RATE_LIMIT.code,
-        "Too many requests. Slow down!"
-    )
+    return error_response(APIStatusCode.RATE_LIMIT.code, "Too many requests. Slow down!")
 
 # Validation error handler (Handles invalid UUIDs and malformed inputs)
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    error_data = error_response(
-        APIStatusCode.INVALID_PARAMETER.code,
-        "Invalid input format. Please ensure your UUID is correct."
-    )
+    error_data = error_response(APIStatusCode.INVALID_PARAMETER.code, "Invalid input format. Please ensure your UUID is correct.")
 
     return error_data
 
