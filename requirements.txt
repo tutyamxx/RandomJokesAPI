@@ -3,4 +3,3 @@ uvicorn
 boto3
 slowapi
 python-dotenv
-mangum
