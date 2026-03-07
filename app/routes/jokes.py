@@ -46,7 +46,6 @@ async def joke_by_id(joke_id: str, request: Request):
 
     return success_response(joke)
 
-
 @router.get("/category/{category}")
 @limiter.limit(settings.RATE_LIMIT_SEARCH)
 async def jokes_category(category: str, request: Request):

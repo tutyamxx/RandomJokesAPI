@@ -116,7 +116,7 @@ def get_joke_by_id(joke_id: str):
 
         resp = table.get_item(
             Key={"id": joke_id},
-            ConsistentRead=False # Eventually consistent read (cheaper)
+            ConsistentRead=False  # Eventually consistent read (cheaper)
         )
         item = resp.get("Item")
 

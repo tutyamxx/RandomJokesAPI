@@ -1,6 +1,6 @@
 [project]
 name = "RandomJokesAPI"
-version = "1.0.0"
+version = "1.0.1"
 description = "A high-performance, serverless-ready FastAPI application that serves up jokes from AWS DynamoDB, synced automatically from S3."
 readme = "README.md"
 requires-python = ">=3.14"
@@ -13,12 +13,14 @@ dependencies = [
 ]
 
 [tool.ruff]
-target-version = "py312"
+# Updated to py313 (Ruff's current max) to better align with your 3.14 requirement
+target-version = "py313"
 line-length = 100
+preview = true
 
 [tool.ruff.lint]
 # Selected for a Public API:
-# E, W: pycodestyle (standard style)
+# E, W: pycodestyle (standard style + whitespace/EOL checks)
 # F: Pyflakes (logic errors)
 # I: isort (import organization)
 # B: bugbear (common design flaws)
@@ -29,19 +31,21 @@ line-length = 100
 # SIM: flake8-simplify (suggests cleaner code)
 # C4: flake8-comprehensions (better list/dict usage)
 # N: pep8-naming (standardizes ClassName vs func_name)
-select = ["E", "W", "F", "I", "B", "UP", "S", "T20", "ASYNC", "SIM", "C4", "N"]
+# PIE: flake8-pie (miscellaneous linting for simpler code)
+select = ["E", "W", "F", "I", "B", "UP", "S", "T20", "ASYNC", "SIM", "C4", "N", "PIE", "W391"]
 
 ignore = [
     "D203", # Conflict with D211
     "S101", # Allow assert (essential for testing)
     "E501", # Ignore line-length in lint (let the Formatter handle it)
+    "E302"  # Ignore requirement for 2 blank lines before functions/classes
 ]
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
 skip-magic-trailing-comma = false # Enforces clean git diffs
-line-ending = "auto"
+line-ending = "lf" # Forces a single Unix-style newline at EOL
 
 [tool.pyright]
 typeCheckingMode = "standard"
@@ -50,3 +54,7 @@ venv = ".venv"
 
 # For APIs, it's safer to treat missing type hints as warnings
 reportMissingTypeStubs = false
+
+# Treat union types and optional values strictly for high-performance safety
+reportUnnecessaryIsInstance = true
+reportUnusedImport = true

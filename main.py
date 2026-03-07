@@ -23,6 +23,7 @@ print(f"🐌 [RateLimiter] Using rate limit: {settings.RATE_LIMIT_STANDARD}")  #
 async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     return error_response(APIStatusCode.RATE_LIMIT.code, "Too many requests. Slow down!")
 
+
 # Security headers
 app.add_middleware(SecurityHeadersMiddleware)
 
@@ -53,6 +54,7 @@ async def root():
             }
         }
     )
+
 
 # Include jokes router
 app.include_router(jokes_router)
