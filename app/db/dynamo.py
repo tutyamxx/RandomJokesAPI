@@ -36,7 +36,7 @@ logger.info(f"☁️ [AWS] Connected to DynamoDB table: 💾 {TABLE_NAME} in reg
 # DynamoDB helper functions
 def get_random_joke():
     try:
-        logger.info("☁️[AWS] Scanning DynamoDB table for a random joke...")
+        logger.info("☁️ [AWS] Scanning DynamoDB table for a random joke...")
 
         resp = table.scan()
         items = resp.get("Items", [])
