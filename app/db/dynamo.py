@@ -58,7 +58,8 @@ def get_random_joke():
             ExclusiveStartKey={
                 'category': random_cat,
                 'id': random_seed
-            }
+            },
+            ConsistentRead=False
         )
 
         items = resp.get("Items", [])
@@ -68,7 +69,8 @@ def get_random_joke():
             resp = table.query(
                 IndexName='CategoryIndex',
                 KeyConditionExpression=Key('category').eq(random_cat),
-                Limit=1
+                Limit=1,
+                ConsistentRead=False
             )
             items = resp.get("Items", [])
 
