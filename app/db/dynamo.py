@@ -65,7 +65,7 @@ def get_random_joke():
         if not items:
             resp = table.query(
                 IndexName='CategoryIndex',
-                KeyConditionExpression=Key('category').eq(random_cat.lower()),
+                KeyConditionExpression=Key('category').eq(random_cat),
                 Limit=1
             )
             items = resp.get("Items", [])
@@ -112,7 +112,8 @@ def get_random_ten_jokes():
             ExclusiveStartKey={
                 'category': random_cat,
                 'id': random_seed
-            }
+            },
+            ConsistentRead=False
         )
 
         items = resp.get("Items", [])
@@ -124,12 +125,14 @@ def get_random_ten_jokes():
             resp_fallback = table.query(
                 IndexName='CategoryIndex',
                 KeyConditionExpression=Key('category').eq(random_cat),
-                Limit=10 - len(items)
+                Limit=10 - len(items),
+                ConsistentRead=False
             )
             items.extend(resp_fallback.get("Items", []))
 
         # Reconstruct the list to force key order: id, category, joke
         ordered_items = []
+
         for item in items:
             ordered_items.append({
                 "id": item.get("id"),
@@ -167,7 +170,14 @@ def get_joke_by_id(joke_id: str):
             logger.warning(f"☁️ [AWS] No joke found with id: {joke_id}")
             return None
 
-        return item
+        # Reconstruct dictionary to force key order
+        ordered_item = {
+            "id": item.get("id"),
+            "category": item.get("category"),
+            "joke": item.get("joke")
+        }
+
+        return ordered_item
 
     except ClientError as e:
         logger.error(f"☁️ [AWS] Error fetching joke by ID: {e}")
@@ -181,7 +191,12 @@ def get_jokes_by_category(category: str):
     try:
         logger.info(f"☁️ [AWS] Querying jokes in category: {category}")
 
-        resp = table.query(IndexName='CategoryIndex', KeyConditionExpression=Key('category').eq(category.lower()))
+        resp = table.query(
+            IndexName='CategoryIndex',
+            KeyConditionExpression=Key('category').eq(category.lower()),
+            ConsistentRead=False,
+            Limit=20
+        )
         items = resp.get("Items", [])
 
         if not items:
