@@ -35,13 +35,13 @@ dynamodb = boto3.resource(
 table = dynamodb.Table(TABLE_NAME)
 logger.info(f"☁️ [AWS] Connected to DynamoDB table: 💾 {TABLE_NAME} in region: 🌎 {AWS_REGION}")
 
+categoriesdatabase = ['dad', 'short', 'yomama', 'programming', 'chuck-norris', 'web-scrape', 'general', 'misc', 'pun', 'insult']
+
 # DynamoDB helper functions
 def get_random_joke():
     """
     Uses the Category GSI to jump to a random spot.
     """
-    categoriesdatabase = ['dad', 'short', 'yomama', 'programming', 'chuck-norris', 'web-scrape', 'general', 'misc', 'pun', 'insult']
-
     try:
         logger.info("☁️ [AWS] Querying CategoryIndex for a random joke...")
 
@@ -94,29 +94,56 @@ def get_random_joke():
 
 def get_random_ten_jokes():
     """
-    Scans a pool of jokes and returns 10 randomly selected items.
-
-    Fetches a limited set of items from the table (up to 50) to create a shuffle pool,
-    then returns a subset to simulate randomness without scanning the entire table.
-
-    Returns:
-        list[dict]: A list containing up to 10 joke items.
-            Returns an empty list if no items are found or an error occurs.
+    Uses the Category GSI to fetch 10 random jokes by jumping to a random category and seed.
     """
     try:
-        # We scan more than 10 to ensure we have a pool to shuffle from
-        response = table.scan(Limit=50)
-        items = response.get('Items', [])
+        logger.info("☁️ [AWS] Fetching 10 random jokes using GSI jump...")
 
-        if not items:
-            return []
+        # Pick a random category to start from
+        random_cat = random.choice(categoriesdatabase).lower()  # noqa: S311
+        random_seed = str(uuid.uuid4())
 
-        # Shuffle the results and grab 10
-        random.shuffle(items)
+        # Query the GSI using a random seed as the starting point
+        # We fetch 10 items in one go starting from that random ID
+        resp = table.query(
+            IndexName='CategoryIndex',
+            KeyConditionExpression=Key('category').eq(random_cat),
+            Limit=10,
+            ExclusiveStartKey={
+                'category': random_cat,
+                'id': random_seed
+            }
+        )
 
-        return items[:10]
+        items = resp.get("Items", [])
+
+        # Fallback: If we were near the end of the category and got fewer than 10, grab the remainder from the start of the same category.
+        if len(items) < 10:
+            logger.info(f"☁️ [AWS] Reached end of category {random_cat}, fetching wrap-around items...")
+
+            resp_fallback = table.query(
+                IndexName='CategoryIndex',
+                KeyConditionExpression=Key('category').eq(random_cat),
+                Limit=10 - len(items)
+            )
+            items.extend(resp_fallback.get("Items", []))
+
+        # Reconstruct the list to force key order: id, category, joke
+        ordered_items = []
+        for item in items:
+            ordered_items.append({
+                "id": item.get("id"),
+                "category": item.get("category"),
+                "joke": item.get("joke")
+            })
+
+        # Final shuffle of the 10 items for good measure
+        random.shuffle(ordered_items)
+
+        return ordered_items
+
     except Exception as e:
-        print(f"Dynamo Error: {e}")  # noqa: T201
+        logger.error(f"☁️ [AWS] Dynamo Error in get_random_ten: {e}")
         return []
 
 def get_joke_by_id(joke_id: str):
