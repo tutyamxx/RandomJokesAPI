@@ -43,6 +43,16 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
     return error_data
 
+# Add a custom response for 404 endpoint paths
+@app.exception_handler(APIStatusCode.NOT_FOUND.code)
+async def custom_404_handler(request: Request, exc):
+    return JSONResponse(status_code=APIStatusCode.NOT_FOUND.code,
+        content={
+            "status": APIStatusCode.NOT_FOUND.code,
+            "message": "Endpoint not found"
+        }
+    )
+
 # Favicon route
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
