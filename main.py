@@ -21,15 +21,15 @@ STATIC_DIR = BASE_DIR / "static"
 
 app = FastAPI(title="RandomJokesAPI")
 
-# Setup middleware
+# Initialize limiter (first to catch spam)
+limiter = init_limiter(app)
+print(f"🐌 [RateLimiter] Using rate limit: {settings.RATE_LIMIT_STANDARD}")  # noqa: T201
+
+# Setup other middleware (second but in the order they are placed in the file)
 init_middleware(app)
 
 # Mount static files
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-
-# Initialize limiter
-limiter = init_limiter(app)
-print(f"🐌 [RateLimiter] Using rate limit: {settings.RATE_LIMIT_STANDARD}")  # noqa: T201
 
 # Rate limit exception handler
 @app.exception_handler(RateLimitExceeded)
