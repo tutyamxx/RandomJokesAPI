@@ -1,3 +1,4 @@
+# ruff: noqa:RUF067
 from fastapi import APIRouter
 
 from .random import router as random_router

@@ -13,32 +13,58 @@ dependencies = [
 ]
 
 [tool.ruff]
-# Updated to py313 (Ruff's current max) to better align with your 3.14 requirement
 target-version = "py313"
 line-length = 100
 preview = true
 
 [tool.ruff.lint]
-# Selected for a Public API:
-# E, W: pycodestyle (standard style + whitespace/EOL checks)
-# F: Pyflakes (logic errors)
-# I: isort (import organization)
-# B: bugbear (common design flaws)
-# UP: pyupgrade (modernize syntax)
-# S: bandit (security / hardcoded secrets)
-# T20: flake8-print (no stray prints in production)
-# ASYNC: flake8-async (correct await usage)
-# SIM: flake8-simplify (suggests cleaner code)
-# C4: flake8-comprehensions (better list/dict usage)
-# N: pep8-naming (standardizes ClassName vs func_name)
-# PIE: flake8-pie (miscellaneous linting for simpler code)
-select = ["E", "W", "F", "I", "B", "UP", "S", "T20", "ASYNC", "SIM", "C4", "N", "PIE", "W391"]
+select = [
+    # Core
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # import sorting
+
+    # Bug / correctness
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "SIM",  # flake8-simplify
+    "C4",   # flake8-comprehensions
+    "PIE",  # flake8-pie
+    "RET",  # flake8-return
+    "RUF",  # Ruff-specific improvements
+
+    # Security
+    "S",    # bandit rules
+
+    # Async safety
+    "ASYNC",
+
+    # Naming consistency
+    "N",
+
+    # Dead code / cleanup
+    "ARG",  # unused arguments
+    "ERA",  # commented-out code
+    "DTZ",  # datetime timezone safety
+    "PTH",  # pathlib usage over os.path
+
+    # Logging best practices
+    "G",    # logging format
+
+    # Prevent debugging leftovers
+    "T20",  # print()
+    "TID",  # tidy imports
+
+    # Whitespace
+    "W391"
+]
 
 ignore = [
-    "D203", # Conflict with D211
-    "S101", # Allow assert (essential for testing)
-    "E501", # Ignore line-length in lint (let the Formatter handle it)
-    "E302"  # Ignore requirement for 2 blank lines before functions/classes
+    "D203",  # Conflicts with D211
+    "S101",  # allow assert in tests
+    "E501",  # formatter handles line length
+    "E302",  # allow flexible blank lines
 ]
 
 [tool.ruff.format]

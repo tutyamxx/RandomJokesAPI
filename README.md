@@ -32,7 +32,7 @@ A high-performance, serverless-ready **FastAPI** application that serves up joke
 | `GET` | [/jokes/count](https://random-jokes-api-roan.vercel.app/jokes/count) | Get the total number of jokes in the database. DynamoDB updates this count approximately every `6 hours`. | `2/sec` |
 | `GET` | [/jokes/random](https://random-jokes-api-roan.vercel.app/jokes/random) | Get one random joke | `2/sec` |
 | `GET` | [/jokes/random/ten](https://random-jokes-api-roan.vercel.app/jokes/random/ten) | Get a batch of `10` random jokes | `2/sec` |
-| `GET` | [/jokes/{joke_id}](https://random-jokes-api-roan.vercel.app/jokes/317d31cf-e87d-40d5-a914-4b102b9fb52a) | Get a specific joke by UUID | `2/sec` |
+| `GET` | [/jokes/{joke_id}](https://random-jokes-api-roan.vercel.app/jokes/316c700d-cb0a-4a41-b853-5e6142867c2e) | Get a specific joke by UUID | `2/sec` |
 | `GET` | [/jokes/category/{name}](https://random-jokes-api-roan.vercel.app/jokes/category/programming) | Get `20` jokes from a specific category | `1/min` |
 | `GET` | [/jokes/countbycategory](https://random-jokes-api-roan.vercel.app/jokes/countbycategory) | Get the total number of jokes **per category** | `2/sec` |
 

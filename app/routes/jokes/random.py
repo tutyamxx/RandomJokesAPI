@@ -11,7 +11,7 @@ router = APIRouter()
 
 @router.get("/random")
 @limiter.limit(settings.RATE_LIMIT_STANDARD)
-async def random_joke(request: Request):
+async def random_joke(request: Request):  # noqa: ARG001
     joke = await run_in_threadpool(get_random_joke)
 
     if not joke:
@@ -21,7 +21,7 @@ async def random_joke(request: Request):
 
 @router.get("/random/ten")
 @limiter.limit(settings.RATE_LIMIT_STANDARD)
-async def random_ten_jokes(request: Request):
+async def random_ten_jokes(request: Request):  # noqa: ARG001
     jokes = await run_in_threadpool(get_random_ten_jokes)
 
     if not jokes:

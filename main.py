@@ -33,19 +33,18 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Rate limit exception handler
 @app.exception_handler(RateLimitExceeded)
-async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+def rate_limit_handler(request: Request, exc: RateLimitExceeded):  # noqa: ARG001
     return error_response(APIStatusCode.RATE_LIMIT.code, "Too many requests. Slow down!")
 
 # Validation error handler (Handles invalid UUIDs and malformed inputs)
 @app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    error_data = error_response(APIStatusCode.INVALID_PARAMETER.code, "Invalid input format. Please ensure your UUID is correct.")
+def validation_exception_handler(request: Request, exc: RequestValidationError):  # noqa: ARG001
+    return error_response(APIStatusCode.INVALID_PARAMETER.code, "Invalid input format. Please ensure your UUID is correct.")
 
-    return error_data
 
 # Add a custom response for 404 endpoint paths
 @app.exception_handler(APIStatusCode.NOT_FOUND.code)
-async def custom_404_handler(request: Request, exc):
+def custom_404_handler(request: Request, exc):  # noqa: ARG001
     return JSONResponse(status_code=APIStatusCode.NOT_FOUND.code,
         content={
             "status": APIStatusCode.NOT_FOUND.code,

@@ -2,7 +2,7 @@ import os
 
 
 class Settings:
-    # Environment (development or production)
+    # Environment development or production
     ENV = os.environ.get("ENV", "development")
 
     # DynamoDB configuration
@@ -16,7 +16,7 @@ class Settings:
     # Standard limit for /random and /{id}
     RATE_LIMIT_STANDARD = os.environ.get("RATE_LIMIT_STANDARD", "2/second")
 
-    # Slightly stricter for /category/{name} as it may involve more DynamoDB scanning
+    # Slightly stricter for /category/{name} as it may involve more DynamoDB checking
     RATE_LIMIT_SEARCH = os.environ.get("RATE_LIMIT_SEARCH", "1/minute")
 
 

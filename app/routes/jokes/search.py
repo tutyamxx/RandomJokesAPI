@@ -13,7 +13,7 @@ router = APIRouter()
 
 @router.get("/{joke_id}")
 @limiter.limit(settings.RATE_LIMIT_STANDARD)
-async def joke_by_id(joke_id: UUID, request: Request):
+async def joke_by_id(joke_id: UUID, request: Request):  # noqa: ARG001
     joke = await run_in_threadpool(get_joke_by_id, str(joke_id))
 
     if not joke:
@@ -23,7 +23,7 @@ async def joke_by_id(joke_id: UUID, request: Request):
 
 @router.get("/category/{category}")
 @limiter.limit(settings.RATE_LIMIT_SEARCH)
-async def jokes_category(category: str, request: Request):
+async def jokes_category(category: str, request: Request):  # noqa: ARG001
     items = await run_in_threadpool(get_jokes_by_category, category)
 
     if not items:

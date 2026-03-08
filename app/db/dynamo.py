@@ -3,11 +3,12 @@ import os
 import random
 import uuid
 
-# from collections import Counter
 import boto3
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from dotenv import load_dotenv
+
+from .models import Joke
 
 # Load environment variables
 load_dotenv()
@@ -33,8 +34,9 @@ dynamodb = boto3.resource(
 )
 
 table = dynamodb.Table(TABLE_NAME)
-logger.info(f"☁️ [AWS] Connected to DynamoDB table: 💾 {TABLE_NAME} in region: 🌎 {AWS_REGION}")
+logger.info("☁️ [AWS] Connected to DynamoDB table: 💾 %s in region: 🌎 %s", TABLE_NAME, AWS_REGION)
 
+# TODO: Later try not to hardcode it? But then again, it requires a full db scan, thats expensive, find an alternative
 categoriesdatabase = ['dad', 'short', 'yomama', 'programming', 'chuck-norris', 'web-scrape', 'general', 'misc', 'pun', 'insult']
 
 # DynamoDB helper functions
@@ -73,23 +75,20 @@ def get_random_joke():
         raw_joke = items[0] if items else None
 
         if raw_joke:
-            logger.info(f"☁️ [AWS] Random joke found: {raw_joke['id']}")
+            logger.info("☁️ [AWS] Random joke found: %s", raw_joke["id"])
 
-            # Reconstruct the dictionary to force key order: id, category, joke
-            ordered_joke = {
-                "id": raw_joke.get("id"),
-                "category": raw_joke.get("category"),
-                "joke": raw_joke.get("joke")
-            }
+            # Use our Pydantic model for validation and structure which I forgot it exists xD
+            joke_model = Joke(**raw_joke)
 
-            return ordered_joke
-        else:
-            logger.warning(f"☁️ [AWS] No jokes found in category: {random_cat}")
+            # Return ordered dict (id, category, joke)
+            return joke_model.model_dump()
+
+        logger.warning("☁️ [AWS] No jokes found in category: %s", random_cat)
 
         return None
 
     except ClientError as e:
-        logger.error(f"☁️ [AWS] DynamoDB Error: {e}")
+        logger.error("☁️ [AWS] DynamoDB Error: %s", e)
         return None
 
 def get_random_ten_jokes():
@@ -120,7 +119,7 @@ def get_random_ten_jokes():
 
         # Fallback: If we were near the end of the category and got fewer than 10, grab the remainder from the start of the same category.
         if len(items) < 10:
-            logger.info(f"☁️ [AWS] Reached end of category {random_cat}, fetching wrap-around items...")
+            logger.info("☁️ [AWS] Reached end of category %s, fetching wrap-around items...", random_cat)
 
             resp_fallback = table.query(
                 IndexName='CategoryIndex',
@@ -130,23 +129,19 @@ def get_random_ten_jokes():
             )
             items.extend(resp_fallback.get("Items", []))
 
-        # Reconstruct the list to force key order: id, category, joke
-        ordered_items = []
+        # Reconstruct using the Pydantic model
+        joke_models = []
 
         for item in items:
-            ordered_items.append({
-                "id": item.get("id"),
-                "category": item.get("category"),
-                "joke": item.get("joke")
-            })
+            joke_models.append(Joke(**item).model_dump())
 
         # Final shuffle of the 10 items for good measure
-        random.shuffle(ordered_items)
+        random.shuffle(joke_models)
 
-        return ordered_items
+        return joke_models
 
     except Exception as e:
-        logger.error(f"☁️ [AWS] Dynamo Error in get_random_ten: {e}")
+        logger.error("☁️ [AWS] Dynamo Error in get_random_ten: %s", e)
         return []
 
 def get_joke_by_id(joke_id: str):
@@ -161,35 +156,30 @@ def get_joke_by_id(joke_id: str):
             Uses eventually consistent reads to minimize RCU consumption.
     """
     try:
-        logger.info(f"☁️ [AWS] Fetching joke by ID: {joke_id}")
+        logger.info("☁️ [AWS] Fetching joke by ID: %s", joke_id)
 
         resp = table.get_item(Key={"id": joke_id}, ConsistentRead=False)
         item = resp.get("Item")
 
         if not item:
-            logger.warning(f"☁️ [AWS] No joke found with id: {joke_id}")
+            logger.warning("☁️ [AWS] No joke found with id: %s", joke_id)
             return None
 
-        # Reconstruct dictionary to force key order
-        ordered_item = {
-            "id": item.get("id"),
-            "category": item.get("category"),
-            "joke": item.get("joke")
-        }
+        # Use the Pydantic model for validation + ordered output
+        joke_model = Joke(**item)
 
-        return ordered_item
+        return joke_model.model_dump()
 
     except ClientError as e:
-        logger.error(f"☁️ [AWS] Error fetching joke by ID: {e}")
+        logger.error("☁️ [AWS] Error fetching joke by ID: %s", e)
         return None
-
 
 def get_jokes_by_category(category: str):
     """
     Retrieves all jokes matching a specific category using the CategoryIndex GSI.
     """
     try:
-        logger.info(f"☁️ [AWS] Querying jokes in category: {category}")
+        logger.info("☁️ [AWS] Querying jokes in category: %s", category)
 
         resp = table.query(
             IndexName='CategoryIndex',
@@ -200,24 +190,19 @@ def get_jokes_by_category(category: str):
         items = resp.get("Items", [])
 
         if not items:
-            logger.warning(f"☁️ [AWS] No jokes found in category: {category}")
+            logger.warning("☁️ [AWS] No jokes found in category: %s", category)
             return []
 
-        # Reconstruct each joke in the list to force the key order
-        ordered_items = []
+        # Reconstruct using the Pydantic model
+        joke_models = []
 
         for item in items:
-            ordered_joke = {
-                "id": item.get("id"),
-                "category": item.get("category"),
-                "joke": item.get("joke")
-            }
-            ordered_items.append(ordered_joke)
+            joke_models.append(Joke(**item).model_dump())
 
-        return ordered_items
+        return joke_models
 
     except ClientError as e:
-        logger.error(f"☁️ [AWS] Error querying jokes by category: {e}")
+        logger.error("☁️ [AWS] Error querying jokes by category: %s", e)
         return []
 
 def get_joke_count():
@@ -236,9 +221,9 @@ def get_joke_count():
         # This is a metadata look-up; it does not consume Read Capacity Units (RCUs)
         count = table.item_count
 
-        logger.info(f"☁️ [AWS] Current table item count: {count}")
+        logger.info("☁️ [AWS] Current table item count: %s", count)
         return count
 
     except ClientError as e:
-        logger.error(f"☁️ [AWS] Error retrieving count from DynamoDB: {e}")
+        logger.error("☁️ [AWS] Error retrieving count from DynamoDB: %s", e)
         return 0

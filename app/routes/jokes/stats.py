@@ -10,7 +10,7 @@ router = APIRouter()
 
 @router.get("/count")
 @limiter.limit(settings.RATE_LIMIT_STANDARD)
-async def joke_count(request: Request):
+async def joke_count(request: Request):  # noqa: ARG001
     count = await run_in_threadpool(get_joke_count)
 
     return success_response({"total_jokes": count})
@@ -32,5 +32,5 @@ hardcoded_data = {
 
 @router.get("/countbycategory")
 @limiter.limit(settings.RATE_LIMIT_STANDARD)
-async def count_by_category(request: Request):
+async def count_by_category(request: Request):  # noqa: ARG001
     return success_response({"total_jokes_by_category": hardcoded_data})
