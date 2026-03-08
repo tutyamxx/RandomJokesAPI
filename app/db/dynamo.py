@@ -1,10 +1,11 @@
 import logging
 import os
 import random
+import uuid
 
 # from collections import Counter
 import boto3
-from boto3.dynamodb.conditions import Attr
+from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from dotenv import load_dotenv
 
@@ -37,41 +38,58 @@ logger.info(f"☁️ [AWS] Connected to DynamoDB table: 💾 {TABLE_NAME} in reg
 # DynamoDB helper functions
 def get_random_joke():
     """
-    Retrieves a single random joke from the DynamoDB table.
-
-    Performs a full table scan with eventually consistent reads to optimize
-    throughput, then selects one item at random from the result set.
-
-    Returns:
-        dict | None: A dictionary containing 'id', 'category', and 'joke'
-            if successful. Returns None if the table is empty or an
-            AWS service error occurs.
-
-    Example:
-        {
-            "id": "012edec0-8638-4513-af41-aa34f5062d1b",
-            "category": "programming",
-            "joke": "Why do programmers prefer dark mode? Because light attracts bugs."
-        }
+    Uses the Category GSI to jump to a random spot.
     """
-    try:
-        logger.info("☁️ [AWS] Scanning DynamoDB table for a random joke...")
+    categoriesdatabase = ['dad', 'short', 'yomama', 'programming', 'chuck-norris', 'web-scrape', 'general', 'misc', 'pun', 'insult']
 
-        # ConsistentRead=False doubles the throughput for the same cost
-        resp = table.scan(ConsistentRead=False)
+    try:
+        logger.info("☁️ [AWS] Querying CategoryIndex for a random joke...")
+
+        random_cat = random.choice(categoriesdatabase).lower()  # noqa: S311
+        random_seed = str(uuid.uuid4())
+
+        # Query the GSI starting from that random ID
+        resp = table.query(
+            IndexName='CategoryIndex',
+            KeyConditionExpression=Key('category').eq(random_cat),
+            Limit=1,
+            ExclusiveStartKey={
+                'category': random_cat,
+                'id': random_seed
+            }
+        )
+
         items = resp.get("Items", [])
 
+        # Fallback: If the seed was at the very end of the list, just grab the first joke in that category.
         if not items:
-            logger.warning("☁️ [AWS] No jokes found in the table.")
-            return None
+            resp = table.query(
+                IndexName='CategoryIndex',
+                KeyConditionExpression=Key('category').eq(random_cat.lower()),
+                Limit=1
+            )
+            items = resp.get("Items", [])
 
-        joke = random.choice(items)  # noqa: S311
-        logger.info(f"☁️ [AWS] Returning joke with id: {joke['id']}")
+        raw_joke = items[0] if items else None
 
-        return joke
+        if raw_joke:
+            logger.info(f"☁️ [AWS] Random joke found: {raw_joke['id']}")
+
+            # Reconstruct the dictionary to force key order: id, category, joke
+            ordered_joke = {
+                "id": raw_joke.get("id"),
+                "category": raw_joke.get("category"),
+                "joke": raw_joke.get("joke")
+            }
+
+            return ordered_joke
+        else:
+            logger.warning(f"☁️ [AWS] No jokes found in category: {random_cat}")
+
+        return None
 
     except ClientError as e:
-        logger.error(f"☁️ [AWS] Error connecting to DynamoDB: {e}")
+        logger.error(f"☁️ [AWS] DynamoDB Error: {e}")
         return None
 
 def get_random_ten_jokes():
@@ -115,10 +133,7 @@ def get_joke_by_id(joke_id: str):
     try:
         logger.info(f"☁️ [AWS] Fetching joke by ID: {joke_id}")
 
-        resp = table.get_item(
-            Key={"id": joke_id},
-            ConsistentRead=False  # Eventually consistent read (cheaper)
-        )
+        resp = table.get_item(Key={"id": joke_id}, ConsistentRead=False)
         item = resp.get("Item")
 
         if not item:
@@ -134,38 +149,34 @@ def get_joke_by_id(joke_id: str):
 
 def get_jokes_by_category(category: str):
     """
-    Filters the joke table for all items matching a specific category.
-
-    Note:
-        This implementation uses a Scan with a FilterExpression. While functional,
-        this is O(n) complexity. For large datasets, consider a Global Secondary
-        Index (GSI) on the 'category' attribute for O(1) Query performance.
-
-    Args:
-        category (str): The category name to filter by (e.g., 'programming').
-
-    Returns:
-        list[dict]: A list of jokes matching the category.
-            Returns an empty list if no matches are found or on error.
+    Retrieves all jokes matching a specific category using the CategoryIndex GSI.
     """
     try:
         logger.info(f"☁️ [AWS] Querying jokes in category: {category}")
 
-        # Scans are expensive; ConsistentRead=False makes them 50% cheaper
-        resp = table.scan(
-            FilterExpression=Attr("category").eq(category),
-            ConsistentRead=False
-        )
+        resp = table.query(IndexName='CategoryIndex', KeyConditionExpression=Key('category').eq(category.lower()))
         items = resp.get("Items", [])
 
         if not items:
             logger.warning(f"☁️ [AWS] No jokes found in category: {category}")
-        return items
+            return []
+
+        # Reconstruct each joke in the list to force the key order
+        ordered_items = []
+
+        for item in items:
+            ordered_joke = {
+                "id": item.get("id"),
+                "category": item.get("category"),
+                "joke": item.get("joke")
+            }
+            ordered_items.append(ordered_joke)
+
+        return ordered_items
 
     except ClientError as e:
         logger.error(f"☁️ [AWS] Error querying jokes by category: {e}")
         return []
-
 
 def get_joke_count():
     """
@@ -189,35 +200,3 @@ def get_joke_count():
     except ClientError as e:
         logger.error(f"☁️ [AWS] Error retrieving count from DynamoDB: {e}")
         return 0
-
-# This is too expensive to run so hardcoded values it is
-# def get_joke_counts_by_category():
-#     """
-#     Scans DynamoDB and counts the number of jokes per category.
-#     Uses ProjectionExpression to minimize read costs.
-#     Returns a dict {category: count}.
-#     """
-#     try:
-#         logger.info("☁️ [AWS] Counting jokes per category...")
-
-#         category_counts = Counter()
-#         response = table.scan(ProjectionExpression="category")
-
-#         for item in response['Items']:
-#             category_counts[item['category']] += 1
-
-#         # Handle pagination
-#         while 'LastEvaluatedKey' in response:
-#             response = table.scan(
-#                 ProjectionExpression="category",
-#                 ExclusiveStartKey=response['LastEvaluatedKey']
-#             )
-#             for item in response['Items']:
-#                 category_counts[item['category']] += 1
-
-#         logger.info(f"☁️ [AWS] Counts per category: {dict(category_counts)}")
-#         return dict(category_counts)
-
-#     except ClientError as e:
-#         logger.error(f"☁️ [AWS] Error counting categories: {e}")
-#         return {}
