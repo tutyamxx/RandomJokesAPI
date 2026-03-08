@@ -61,17 +61,21 @@ select = [
 ]
 
 ignore = [
-    "D203",  # Conflicts with D211
-    "S101",  # allow assert in tests
-    "E501",  # formatter handles line length
-    "E302",  # allow flexible blank lines
+    "D203", # Conflict with D211
+    "S101", # Allow assert (essential for testing)
+    "E501", # Ignore line-length in lint (let the Formatter handle it)
+    "E302"  # Ignore requirement for 2 blank lines before functions/classes
 ]
 
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
-skip-magic-trailing-comma = false # Enforces clean git diffs
-line-ending = "lf" # Forces a single Unix-style newline at EOL
+
+# Enforces clean git diffs
+skip-magic-trailing-comma = false
+
+# Forces a single Unix-style newline at EOL
+line-ending = "lf"
 
 [tool.pyright]
 typeCheckingMode = "standard"
@@ -80,5 +84,4 @@ venv = ".venv"
 
 # For APIs, it's safer to treat missing type hints as warnings
 reportMissingTypeStubs = false
-
 reportMissingImports = "none"
