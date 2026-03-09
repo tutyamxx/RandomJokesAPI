@@ -18,7 +18,7 @@ A high-performance, serverless-ready **FastAPI** application that serves up joke
 
 ## 🛠 Tech Stack
 
-* **Backend**: Python 3.10+, FastAPI
+* **Backend**: Python 3.14+, FastAPI
 * **Database**: Amazon DynamoDB
 * **Rate Limiter**: Slowapi
 * **SDK**: Boto3 (`AWS SDK for Python`)

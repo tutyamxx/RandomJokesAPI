@@ -39,54 +39,66 @@ logger.info("☁️ [AWS] Connected to DynamoDB table: 💾 %s in region: 🌎 %
 # TODO: Later try not to hardcode it? But then again, it requires a full db scan, thats expensive, find an alternative
 categoriesdatabase = ['dad', 'short', 'yomama', 'programming', 'chuck-norris', 'web-scrape', 'general', 'misc', 'pun', 'insult']
 
+"""
++----------------------+----------------+----------------+--------------------------------------------------------------+
+|      INDEX NAME      |   PARTITION    |      SORT      |      PROJECTION                                              |
++----------------------+----------------+----------------+--------------------------------------------------------------+
+| RandomShardIndex     | random_shard   | id             | INCLUDE                                                      |
+|                      | (Number)       | (String)       | Attributes: id, category, joke                               |
+|                      |                |                | Note: 10 shards (1-10) for ~380k items, O(1) random access   |
++----------------------+----------------+----------------+--------------------------------------------------------------+
+| CategoryIndex        | category       | id             | ALL                                                          |
+|                      | (String)       | (String)       |                                                              |
++----------------------+----------------+----------------+--------------------------------------------------------------+
+"""
+
 # DynamoDB helper functions
 def get_random_joke():
     """
-    Uses the Category GSI to jump to a random spot.
+    Uses the RandomShardIndex GSI to jump to a random spot across shards.
     """
     try:
-        logger.info("☁️ [AWS] Querying CategoryIndex for a random joke...")
+        logger.info("☁️ [AWS] Querying 🧊 RandomShardIndex for a random joke...")
 
-        random_cat = random.choice(categoriesdatabase).lower()  # noqa: S311
+        # Pick a random shard (1-10) and a random UUID seed for the jump
+        selected_shard = random.randint(1, 10)  # noqa: S311
         random_seed = str(uuid.uuid4())
 
-        # Query the GSI starting from that random ID
-        resp = table.query(
-            IndexName='CategoryIndex',
-            KeyConditionExpression=Key('category').eq(random_cat),
-            Limit=1,
+        query_params = {
+            'IndexName': 'RandomShardIndex',
+            'KeyConditionExpression': Key('random_shard').eq(selected_shard),
+            'Limit': 1,
+            'ConsistentRead': False,
+            'ProjectionExpression': "id, category, joke"
+        }
+
+        # Query the GSI starting from that random ID within the selected shard
+        response = table.query(
+            **query_params,
             ExclusiveStartKey={
-                'category': random_cat,
+                'random_shard': selected_shard,
                 'id': random_seed
-            },
-            ConsistentRead=False
+            }
         )
 
-        items = resp.get("Items", [])
+        items = response.get("Items", [])
 
-        # Fallback: If the seed was at the very end of the list, just grab the first joke in that category.
+        # Fallback: If the seed was at the very end of the shard, grab the first joke in that shard.
         if not items:
-            resp = table.query(
-                IndexName='CategoryIndex',
-                KeyConditionExpression=Key('category').eq(random_cat),
-                Limit=1,
-                ConsistentRead=False
-            )
-            items = resp.get("Items", [])
+            logger.info("☁️ [AWS] Seed hit the end of 🧊 shard %s, wrapping around...", selected_shard)
+
+            response = table.query(**query_params)
+            items = response.get("Items", [])
 
         raw_joke = items[0] if items else None
 
         if raw_joke:
             logger.info("☁️ [AWS] Random joke found: %s", raw_joke["id"])
-
-            # Use our Pydantic model for validation and structure which I forgot it exists xD
             joke_model = Joke(**raw_joke)
 
-            # Return ordered dict (id, category, joke)
             return joke_model.model_dump()
 
-        logger.warning("☁️ [AWS] No jokes found in category: %s", random_cat)
-
+        logger.warning("☁️ [AWS] No jokes found in 🧊 shard: %s", selected_shard)
         return None
 
     except ClientError as e:
@@ -95,42 +107,52 @@ def get_random_joke():
 
 def get_random_ten_jokes():
     """
-    Fetch 10 random jokes across categories using the Category GSI.
+    Fetch 10 random jokes across shards using the RandomShardIndex GSI.
     """
     try:
         jokes = []
-        attempts = 0
-        maxjokesandattempts = 10
+        max_jokes = 10
 
-        while len(jokes) < maxjokesandattempts and attempts < maxjokesandattempts:
+        attempts = 0
+        max_attempts = 5
+
+        while len(jokes) < max_jokes and attempts < max_attempts:
             attempts += 1
 
-            random_cat = random.choice(categoriesdatabase).lower()  # noqa: S311
+            selected_shard = random.randint(1, 10)  # noqa: S311
             random_seed = str(uuid.uuid4())
 
-            resp = table.query(
-                IndexName="CategoryIndex",
-                KeyConditionExpression=Key("category").eq(random_cat),
-                Limit=3,
-                ExclusiveStartKey={
-                    "category": random_cat,
-                    "id": random_seed
-                },
-                ConsistentRead=False
-            )
+            query_params = {
+                "IndexName": "RandomShardIndex",
+                "KeyConditionExpression": Key("random_shard").eq(selected_shard),
+                "Limit": 5,
+                "ConsistentRead": False,
+                "ProjectionExpression": "id, category, joke"
+            }
 
+            logger.info("☁️ [AWS] Querying 🧊 shard %s with seed %s (attempt #%d)", selected_shard, random_seed, attempts)
+
+            resp = table.query(**query_params, ExclusiveStartKey={"random_shard": selected_shard, "id": random_seed})
             items = resp.get("Items", [])
 
-            if items:
-                for item in items:
-                    if len(jokes) < maxjokesandattempts:
-                        jokes.append(item)
-                    else:
-                        break
+            # Fallback (Wrap-around if the jump hit the end of the shard)
+            if not items:
+                logger.info("☁️ [AWS] Fallback query for 🧊 shard %s (no items found with seed)", selected_shard)
+
+                resp = table.query(**query_params)
+                items = resp.get("Items", [])
+
+            for item in items:
+                if len(jokes) >= max_jokes:
+                    break
+
+                if item not in jokes:
+                    jokes.append(item)
 
         joke_models = [Joke(**j).model_dump() for j in jokes]
         random.shuffle(joke_models)
 
+        logger.info("☁️ [AWS] Retrieved %d jokes", len(joke_models))
         return joke_models
 
     except Exception as e:
@@ -139,19 +161,13 @@ def get_random_ten_jokes():
 
 def get_joke_by_id(joke_id: str):
     """
-    Retrieves a specific joke from DynamoDB using its unique partition key.
-
-    Args:
-        joke_id (str): The UUID or unique identifier of the joke.
-
-    Returns:
-        dict | None: The joke object if found, otherwise None.
-            Uses eventually consistent reads to minimize RCU consumption.
+    Retrieves a specific joke using its unique partition key.
+    Uses ProjectionExpression to avoid fetching the random_shard metadata.
     """
     try:
         logger.info("☁️ [AWS] Fetching joke by ID: %s", joke_id)
 
-        resp = table.get_item(Key={"id": joke_id}, ConsistentRead=False)
+        resp = table.get_item(Key={"id": joke_id}, ConsistentRead=False, ProjectionExpression="id, category, joke")
         item = resp.get("Item")
 
         if not item:
@@ -169,7 +185,8 @@ def get_joke_by_id(joke_id: str):
 
 def get_jokes_by_category(category: str):
     """
-    Retrieves all jokes matching a specific category using the CategoryIndex GSI.
+    Retrieves jokes matching a specific category using the CategoryIndex GSI.
+    Uses ProjectionExpression to minimize data transfer costs.
     """
     try:
         logger.info("☁️ [AWS] Querying jokes in category: %s", category)
@@ -178,7 +195,8 @@ def get_jokes_by_category(category: str):
             IndexName='CategoryIndex',
             KeyConditionExpression=Key('category').eq(category.lower()),
             ConsistentRead=False,
-            Limit=20
+            Limit=20,
+            ProjectionExpression="id, category, joke"
         )
         items = resp.get("Items", [])
 
