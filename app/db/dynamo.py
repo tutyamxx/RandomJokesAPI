@@ -73,14 +73,7 @@ def get_random_joke():
         }
 
         # Query the GSI starting from that random ID within the selected shard
-        response = table.query(
-            **query_params,
-            ExclusiveStartKey={
-                'random_shard': selected_shard,
-                'id': random_seed
-            }
-        )
-
+        response = table.query(**query_params, ExclusiveStartKey={'random_shard': selected_shard, 'id': random_seed})
         items = response.get("Items", [])
 
         # Fallback: If the seed was at the very end of the shard, grab the first joke in that shard.
