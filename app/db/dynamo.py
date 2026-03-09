@@ -95,49 +95,40 @@ def get_random_joke():
 
 def get_random_ten_jokes():
     """
-    Uses the Category GSI to fetch 10 random jokes by jumping to a random category and seed.
+    Fetch 10 random jokes across categories using the Category GSI.
     """
     try:
-        logger.info("☁️ [AWS] Fetching 10 random jokes using GSI jump...")
+        jokes = []
+        attempts = 0
+        maxjokesandattempts = 10
 
-        # Pick a random category to start from
-        random_cat = random.choice(categoriesdatabase).lower()  # noqa: S311
-        random_seed = str(uuid.uuid4())
+        while len(jokes) < maxjokesandattempts and attempts < maxjokesandattempts:
+            attempts += 1
 
-        # Query the GSI using a random seed as the starting point
-        # We fetch 10 items in one go starting from that random ID
-        resp = table.query(
-            IndexName='CategoryIndex',
-            KeyConditionExpression=Key('category').eq(random_cat),
-            Limit=10,
-            ExclusiveStartKey={
-                'category': random_cat,
-                'id': random_seed
-            },
-            ConsistentRead=False
-        )
+            random_cat = random.choice(categoriesdatabase).lower()  # noqa: S311
+            random_seed = str(uuid.uuid4())
 
-        items = resp.get("Items", [])
-
-        # Fallback: If we were near the end of the category and got fewer than 10, grab the remainder from the start of the same category.
-        if len(items) < 10:
-            logger.info("☁️ [AWS] Reached end of category %s, fetching wrap-around items...", random_cat)
-
-            resp_fallback = table.query(
-                IndexName='CategoryIndex',
-                KeyConditionExpression=Key('category').eq(random_cat),
-                Limit=10 - len(items),
+            resp = table.query(
+                IndexName="CategoryIndex",
+                KeyConditionExpression=Key("category").eq(random_cat),
+                Limit=3,
+                ExclusiveStartKey={
+                    "category": random_cat,
+                    "id": random_seed
+                },
                 ConsistentRead=False
             )
-            items.extend(resp_fallback.get("Items", []))
 
-        # Reconstruct using the Pydantic model
-        joke_models = []
+            items = resp.get("Items", [])
 
-        for item in items:
-            joke_models.append(Joke(**item).model_dump())
+            if items:
+                for item in items:
+                    if len(jokes) < maxjokesandattempts:
+                        jokes.append(item)
+                    else:
+                        break
 
-        # Final shuffle of the 10 items for good measure
+        joke_models = [Joke(**j).model_dump() for j in jokes]
         random.shuffle(joke_models)
 
         return joke_models
