@@ -17,7 +17,7 @@ def get_remote_address_with_log(request):
         str: The IP address of the client making the request.
     """
     addr = get_remote_address(request)
-    print(f"🐌 [RateLimiter] Request from {addr}")  # noqa: T201
+    print("🐌 [RateLimiter] Request from", format(addr))  # noqa: T201
 
     return addr
 

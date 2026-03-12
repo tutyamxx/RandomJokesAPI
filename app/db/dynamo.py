@@ -76,11 +76,12 @@ def get_random_joke():
         response = table.query(**query_params, ExclusiveStartKey={'random_shard': selected_shard, 'id': random_seed})
         items = response.get("Items", [])
 
-        # Fallback: If the seed was at the very end of the shard, grab the first joke in that shard.
+        # Fallback: If the seed was at the very end of the shard, look backwards from the end to grab the last available joke.
         if not items:
-            logger.info("☁️ [AWS] Seed hit the end of 🧊 shard %s, wrapping around...", selected_shard)
+            logger.info("☁️ [AWS] Seed hit the end of 🧊 shard %s, grabbing last item...", selected_shard)
 
-            response = table.query(**query_params)
+            # We remove ExclusiveStartKey and flip the search direction
+            response = table.query(**query_params, ScanIndexForward=False)
             items = response.get("Items", [])
 
         raw_joke = items[0] if items else None
@@ -125,20 +126,23 @@ def get_random_ten_jokes():
 
             logger.info("☁️ [AWS] Querying 🧊 shard %s with seed %s (attempt #%d)", selected_shard, random_seed, attempts)
 
+            # Query the GSI starting from that random ID within the selected shard
             resp = table.query(**query_params, ExclusiveStartKey={"random_shard": selected_shard, "id": random_seed})
             items = resp.get("Items", [])
 
-            # Fallback (Wrap-around if the jump hit the end of the shard)
+            # Fallback (Look backwards from the end if the jump hit the end of the shard)
             if not items:
                 logger.info("☁️ [AWS] Fallback query for 🧊 shard %s (no items found with seed)", selected_shard)
 
-                resp = table.query(**query_params)
+                # Flip search direction to grab the last 5 items in the shard
+                resp = table.query(**query_params, ScanIndexForward=False)
                 items = resp.get("Items", [])
 
             for item in items:
                 if len(jokes) >= max_jokes:
                     break
 
+                # Basic deduplication check
                 if item not in jokes:
                     jokes.append(item)
 

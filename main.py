@@ -23,7 +23,7 @@ app = FastAPI(title="RandomJokesAPI")
 
 # Initialize limiter (first to catch spam)
 limiter = init_limiter(app)
-print(f"🐌 [RateLimiter] Using rate limit: {settings.RATE_LIMIT_STANDARD}")  # noqa: T201
+print("🐌 [RateLimiter] Using rate limit:", format(settings.RATE_LIMIT_STANDARD))  # noqa: T201
 
 # Setup other middleware (second but in the order they are placed in the file)
 init_middleware(app)
